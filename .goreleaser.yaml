@@ -1,0 +1,70 @@
+version: 2
+
+project_name: peer-agent
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: peer-agent
+    main: ./cmd/agent
+    binary: peer-agent
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -buildid= -X main.version={{.Version}}
+    goos: [linux, darwin]
+    goarch: [amd64, arm64]
+  - id: peer-agent-windows
+    main: ./cmd/agent
+    binary: peer-agent
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -buildid= -H=windowsgui -X main.version={{.Version}}
+    goos: [windows]
+    goarch: [amd64, arm64]
+
+archives:
+  - id: peer-agent
+    ids: [peer-agent, peer-agent-windows]
+    name_template: "peer-agent_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - src: packaging/README.txt
+        strip_parent: true
+      - src: packaging/peer-agent.env.example
+        strip_parent: true
+
+nfpms:
+  - id: peer-agent
+    package_name: luminaproxy-peer-agent
+    ids: [peer-agent]
+    vendor: LuminaProxy
+    homepage: https://luminaproxy.com
+    maintainer: LuminaProxy <noreply@luminaproxy.com>
+    description: LuminaProxy peer agent — opt-in bandwidth sharing.
+    license: MIT
+    formats: [deb, rpm]
+    bindir: /usr/bin
+    contents:
+      - src: packaging/peer-agent.service
+        dst: /lib/systemd/system/peer-agent.service
+      - src: packaging/peer-agent.env.example
+        dst: /etc/luminaproxy/peer-agent.env.example
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  name_template: "v{{ .Version }}"
+  github:
+    owner: lumina-proxy
+    name: peer-agent

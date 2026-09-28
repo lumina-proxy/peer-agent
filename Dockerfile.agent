@@ -1,0 +1,16 @@
+FROM golang:1.25-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum* ./
+RUN go mod download || go mod tidy
+COPY . .
+ARG VERSION=docker
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o peer-agent ./cmd/agent
+
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+RUN addgroup -g 1001 peeruser && adduser -u 1001 -S peeruser -G peeruser
+WORKDIR /app
+COPY --from=builder /app/peer-agent .
+RUN chown peeruser:peeruser peer-agent
+USER peeruser
+ENTRYPOINT ["./peer-agent"]

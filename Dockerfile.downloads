@@ -1,0 +1,4 @@
+FROM nginxinc/nginx-unprivileged:alpine
+COPY packaging/downloads-nginx.conf /etc/nginx/conf.d/default.conf
+COPY downloads-site/ /usr/share/nginx/html/downloads/
+EXPOSE 8080

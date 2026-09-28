@@ -1,0 +1,6 @@
+/dist/
+/downloads-site/
+/peer-agent
+/peer-agent.exe
+*.key
+.env
