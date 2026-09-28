@@ -54,6 +54,10 @@ nfpms:
     license: MIT
     formats: [deb, rpm]
     bindir: /usr/bin
+    scripts:
+      postinstall: packaging/scripts/postinstall.sh
+      preremove: packaging/scripts/preremove.sh
+      postremove: packaging/scripts/postremove.sh
     contents:
       - src: packaging/peer-agent.service
         dst: /lib/systemd/system/peer-agent.service
